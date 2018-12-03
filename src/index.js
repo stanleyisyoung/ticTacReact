@@ -2,35 +2,63 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
-class Square extends React.Component {
+function Square(props) {
+  // No longer needed bc mv'd up to parent
   // initializing state so we can track if we're on X || O
-  constructor(props){
-    super(props); // in js always call super for subclass constructor
-    this.state = {
-      value: null,
-    };
-  }
+  // constructor(props){
+  //   super(props); // in js always call super for subclass constructor
+  //   this.state = {
+  //     value: null,
+  //   };
+  // }
 
-  render() { // function part, set state on click
+  // this is now a FUNCTION component bc there's no state
+  // we have rm'd the render function
+  // render() { 
     return (
       <button 
-        className="square" 
-        onClick={ () => this.setState({value: 'X'})}
+        className="square"
+        onClick={ () => props.onClick()}
       >
-        {this.state.value} 
+        {props.value} 
       </button>
-    );
-  }
+    )
+  // }
 }
 
 class Board extends React.Component {
+  constructor(props){
+    super(props);
+    this.state = {
+      squares: Array(9).fill(null),
+      xNext: true,
+    };
+  }
+
+  handleClick(i) {
+    // slice mks cp of square and modifies that
+    // aka making original immutable
+    const squares = this.state.squares.slice();
+    squares[i] = this.state.xNext ? 'X' : 'O';
+    this.setState({
+      squares: squares,
+      xNext: !this.state.xNext,
+    });
+  }
+
   renderSquare(i) {
-    return <Square value={i} />; 
+    return (
+      // two props are passed to Square child: value && onClick
+      <Square 
+        value={this.state.squares[i]}
+        onClick={() => this.handleClick(i)}
+      />
+    );
     // can name 'value' anything and is stored into prop(erties)
   }
 
   render() {
-    const status = 'Next player: X';
+    const status = 'Next player: ' + (this.state.xNext ? 'X' : 'O');
 
     return (
       <div>
