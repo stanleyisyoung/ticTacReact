@@ -27,55 +27,58 @@ function Square(props) {
 }
 
 class Board extends React.Component {
-  constructor(props){
-    super(props);
-    this.state = {
-      squares: Array(9).fill(null),
-      xNext: true,
-    };
-  }
+  // Section 2: moved up to game lvl
+  // constructor(props){
+  //   super(props);
+  //   this.state = {
+  //     squares: Array(9).fill(null),
+  //     xNext: true,
+  //   };
+  // }
 
-  handleClick(i) {
-    // slice mks cp of square and modifies that
-    // aka making original immutable
-    const squares = this.state.squares.slice();
+  // handleClick(i) {
+  //   // slice mks cp of square and modifies that
+  //   // aka making original immutable
+  //   const squares = this.state.squares.slice();
     
-    // check if anyone won yet
-    if(calculateWinner(squares) || squares[i]){
-      return;
-    }
+  //   // check if anyone won yet
+  //   if(calculateWinner(squares) || squares[i]){
+  //     return;
+  //   }
 
-    squares[i] = this.state.xNext ? 'X' : 'O';
-    this.setState({
-      squares: squares,
-      xNext: !this.state.xNext,
-    });
-  }
+  //   squares[i] = this.state.xNext ? 'X' : 'O';
+  //   this.setState({
+  //     squares: squares,
+  //     xNext: !this.state.xNext,
+  //   });
+  // }
 
   renderSquare(i) {
     return (
-      // two props are passed to Square child: value && onClick
+      // two props are passed to Square child: value && onClickf
+      // change .state to .props when data is coming from parent
       <Square 
-        value={this.state.squares[i]}
-        onClick={() => this.handleClick(i)}
+        value={this.props.squares[i]}
+        onClick={() => this.props.onClick(i)}
       />
     );
     // can name 'value' anything and is stored into prop(erties)
   }
 
   render() {
-    const winner = calculateWinner(this.state.squares);
-    let status;
-    if(winner) {
-      status = winner + ' HAS WON!!!';
-    } else {
-      status = "Next player: " + (this.state.xNext ? 'X' : 'O');
-    }
-  
-
+    // mv'd to Game component
+    // const winner = calculateWinner(this.state.squares);
+    // let status;
+    // if(winner) {
+    //   status = this.props.winner + ' HAS WON!!!';
+    // } else {
+    //   status = "Next player: " + (this.state.xNext ? 'X' : 'O');
+    // }
+    
     return (
       <div>
-        <div className="status">{status}</div>
+        {/* rm below, mv'd to Game */}
+        {/* <div className="status">{status}</div> */}
         <div className="board-row">
           {this.renderSquare(0)}
           {this.renderSquare(1)}
@@ -97,14 +100,58 @@ class Board extends React.Component {
 }
 
 class Game extends React.Component {
+  // lift history state into game level
+  constructor(props){
+    super(props);
+    this.state = {
+      history: [{
+        squares: Array(9).fill(null),
+      }],
+      xNext: true,
+    }
+  }
+
+  handleClick(i) {
+    const history = this.state.history;
+    const current = history[history.length-1];
+    const squares = current.squares.slice();
+
+    // check if there's a winner || spot taken
+    if(calculateWinner(squares) || squares[i]){
+      return;
+    }
+
+    squares[i] = this.state.xNext ? 'X' : 'O';
+    this.setState({
+      // concat doesn't mutate original arr, but push does
+      history: history.concat([{
+        squares: squares,
+      }]),
+      xNext: !this.state.xNext,
+    });
+  }
+  
   render() {
+    const history = this.state.history;
+    const current = history[history.length -1]; 
+    const winner  = calculateWinner(current.squares);
+    let status;
+    if(winner) {
+      status = 'Winner winner chicken dinner: ' + winner;
+    } else {
+      status = 'Next player: ' + this.state.xNext ? 'X' : 'Y';
+    }
+
     return (
       <div className="game">
         <div className="game-board">
-          <Board />
+          <Board 
+            squares = {current.squares}
+            onClick={ (i) => this.handleClick(i)}
+          />
         </div>
         <div className="game-info">
-          <div>{/* status */}</div>
+          <div>{status}</div>
           <ol>{/* TODO */}</ol>
         </div>
       </div>
@@ -140,5 +187,3 @@ ReactDOM.render(
   <Game />,
   document.getElementById('root')
 );
-
-
